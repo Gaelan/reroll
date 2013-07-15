@@ -5,6 +5,10 @@ issue_number = ARGV[0]
 issue = open "https://drupal.org/node/#{issue_number}/project-issue/json" do |json|
     JSON.load json
 end
+def cmd command
+    puts command
+    `#{command}`
+end
 attachments = issue["attachments"]
 comments = issue["comments"]
 # Add comment numbers to comments
@@ -35,6 +39,6 @@ chosen_attachment = if ARGV[1]
 date = comments[chosen_attachment["commentId"]]["created"]
 # Get the commit it worked on.
 puts "If this breaks, make sure you are in a git clone of D8."
-commit_hash = `git log --before=#{date} -1 --pretty=format:%H`
+commit_hash = cmd "git log --before=#{date} -1 --pretty=format:%H"
 # Make a branch.
-`git checkout -b #{issue_number} #{commit_hash}`
+cmd "git checkout -b #{issue_number} #{commit_hash}"
