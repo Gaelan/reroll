@@ -27,8 +27,14 @@ end
 # Decide on an attachment.
 chosen_attachment = if ARGV[1]
                         number = ARGV[1].to_i
-                        attachments.select { |attachment| comments[attachment["commentId"]]["commentNumber"] == number }.to_i
+                        attachments.select { |attachment| comments[attachment["commentId"]]["commentNumber"] == number }[0]
                     else
                         attachments.last
                     end
-ap chosen_attachment
+# Get the date.
+date = comments[chosen_attachment["commentId"]]["created"]
+# Get the commit it worked on.
+puts "If this breaks, make sure you are in a git clone of D8."
+commit_hash = `git log --before=#{date} -1 --pretty=format:%H`
+# Make a branch.
+`git checkout -b #{issue_number} #{commit_hash}`
