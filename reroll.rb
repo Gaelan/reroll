@@ -1,6 +1,5 @@
 require "open-uri"
 require "json"
-require "awesome_print"
 issue_number = ARGV[0]
 issue = open "https://drupal.org/node/#{issue_number}/project-issue/json" do |json|
     JSON.load json
