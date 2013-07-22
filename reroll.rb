@@ -4,13 +4,10 @@ issue_number = ARGV[0]
 issue = open "https://drupal.org/node/#{issue_number}/project-issue/json" do |json|
     JSON.load json
 end
-def cmd command, return_result = false
-    puts command
-    if return_result
-        result = `#{command}`
-    else
-        system command
-    end
+def cmd command
+    puts "$ #{command}"
+    result = `#{command}`
+    puts result
     result
 end
 attachments = issue["attachments"]
@@ -47,7 +44,7 @@ end
 date = comments[chosen_attachment["commentId"]]["created"]
 # Get the commit it worked on.
 puts "If this breaks, make sure you are in a git clone of D8."
-commit_hash = cmd "git log --before=#{date} -1 --pretty=format:%H", true
+commit_hash = cmd "git log --before=#{date} -1 --pretty=format:%H"
 # Make a branch.
 cmd "git checkout -b #{issue_number} #{commit_hash}"
 # Apply the patch
