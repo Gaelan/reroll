@@ -36,6 +36,11 @@ chosen_attachment = if ARGV[1]
                     else
                         attachments.last
                     end
+
+# Filter out interdiffs
+# @todo Filter out -FAIL.patch files.
+chosen_attachment["urls"] = chosen_attachment["urls"].select { |k,v| v =~ /interdiff/ }
+
 if chosen_attachment["urls"].count != 1
     puts "This comment has more than one patch. Bug Gaelan to make this work."
     exit 1
