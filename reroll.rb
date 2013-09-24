@@ -1,5 +1,8 @@
 require "open-uri"
 require "json"
+def patch?(url)
+    url =~ /\.patch$/ && !(url =~ /-FAIL\.patch$/)
+end
 issue_number = ARGV[0]
 issue = open "https://drupal.org/node/#{issue_number}/project-issue/json" do |json|
     JSON.load json
@@ -20,10 +23,7 @@ end
 attachments = attachments.values
 # Drop non-patch attachments because we don't need them.
 attachments.select! do |attachment|
-    attachment["urls"].select! do |url|
-        !(url =~ /\.patch$/)
-    end
-    attachment["urls"].size != 0
+    attachment["urls"].select { |id, url| patch? url }.size != 0
 end
 # Sort attachments by comment order
 attachments.sort_by! do |attatchment|
@@ -36,6 +36,10 @@ chosen_attachment = if ARGV[1]
                     else
                         attachments.last
                     end
+
+# Filter out interdiffs and foo-FAIL.patch
+chosen_attachment["urls"].select! { |id, url| patch? url }
+
 if chosen_attachment["urls"].count != 1
     puts "This comment has more than one patch. Bug Gaelan to make this work."
     exit 1
@@ -50,7 +54,7 @@ cmd "git checkout -b #{issue_number} #{commit_hash}"
 # Apply the patch
 cmd "curl #{chosen_attachment["urls"].values[0]}|git apply --index"
 # Commit it
-cmd "git add *"
+cmd "git add -A *"
 cmd "git commit -m #{comments[chosen_attachment["commentId"]]["commentNumber"]}"
 # Rebase!
 cmd "git rebase 8.x"
